@@ -13,7 +13,7 @@ bool Shader::validate_shader()
         glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &log_length);
 
         if ((GLboolean)status == GL_FALSE)
-            std::print("failed to compile \"{}\"\n");
+            std::print("failed to compile \"{}\"\n", descriptor);
 
         if (log_length > 1)
         {

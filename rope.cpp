@@ -68,9 +68,7 @@ Rope::Rope() : m_nodes()
 
 void Rope::simulate()
 {
-    const glm::vec2  mouse_pos      = ImGui::GetMousePos();
-    static glm::vec2 last_mouse_pos = mouse_pos;
-    const glm::vec2  delta          = mouse_pos - std::exchange(last_mouse_pos, mouse_pos);
+    const glm::vec2 mouse_pos = ImGui::GetMousePos();
 
     spawn_circles();
 
@@ -93,7 +91,7 @@ void Rope::simulate()
         auto& node      = m_nodes[i];
         auto& next_node = m_nodes[i + 1u];
 
-        if (node.m_static)
+        if (node.m_static && !glm::any(glm::equal(glm::vec2(-FLT_MAX, -FLT_MAX), mouse_pos)))
             node.m_pos = mouse_pos;
 
         // collide all the circles against the nodes of our rope

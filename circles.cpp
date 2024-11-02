@@ -74,7 +74,7 @@ Circle::Circle() : m_path()
     m_color = get_random_color();
 
     // pick a random radius
-    m_radius = g_rng.get_random(5.0f, 20.0f);
+    m_radius = g_rng.get_random(13.0f, 35.0f);
 
     // pick a random speed
     m_speed = g_rng.get_random(5.0f, 15.0f);

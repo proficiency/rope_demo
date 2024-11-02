@@ -30,7 +30,7 @@ public:
     glm::vec2 m_velocity;
     glm::vec2 m_force;
 
-    static constexpr float m_rest_length = 0.1f;
+    static constexpr float m_rest_length = 10.f;
 };
 
 class Rope
