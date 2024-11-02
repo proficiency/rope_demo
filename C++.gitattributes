@@ -35,3 +35,6 @@
 *.exe   binary
 *.out   binary
 *.app   binary
+
+# vendor GLAD
+glad.c linguist-vendored
