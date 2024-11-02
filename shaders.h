@@ -2,10 +2,11 @@
 
 #include <vector>
 #include <filesystem>
+
 #include <imgui.h>
 #include <glad/glad.h>
 
-#include "hash.h"
+#include "types.h"
 
 class Shader
 {
@@ -18,7 +19,7 @@ private:
 protected:
     std::filesystem::path m_vert_path;
     std::filesystem::path m_frag_path;
-    u32                   m_hash;
+    size_t                m_hash;
 
 public:
     GLuint      m_vert_shader;
@@ -33,7 +34,7 @@ class Shaders
 {
     std::vector<Shader> m_shaders;
 
-    Shader get_shader(u32 name);
+    Shader get_shader(size_t hash);
 
 public:
     Shaders() = default;

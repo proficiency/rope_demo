@@ -13,7 +13,7 @@ bool Shader::validate_shader()
         glGetShaderiv(handle, GL_INFO_LOG_LENGTH, &log_length);
 
         if ((GLboolean)status == GL_FALSE)
-            std::print("failed to compile '%s'\n", descriptor);
+            std::print("failed to compile \"{}\"\n");
 
         if (log_length > 1)
         {
@@ -22,7 +22,7 @@ bool Shader::validate_shader()
             buf.resize((int)(log_length + 1));
             glGetShaderInfoLog(handle, log_length, NULL, (GLchar*)buf.begin());
 
-            std::print("%s\n", buf.begin());
+            std::print("{}\n", buf.begin());
         }
 
         return (GLboolean)status == GL_TRUE;
@@ -38,7 +38,7 @@ bool Shader::validate_program()
     glGetProgramiv(m_shader_program, GL_INFO_LOG_LENGTH, &log_length);
 
     if ((GLboolean)status == GL_FALSE)
-        std::print("failed to link program for '%s'\n", m_name);
+        std::print("failed to link program for {}\n", std::quoted(m_name)._Str);
 
     if (log_length > 1)
     {
@@ -47,7 +47,7 @@ bool Shader::validate_program()
         buf.resize((int)(log_length + 1));
         glGetProgramInfoLog(m_shader_program, log_length, NULL, (GLchar*)buf.begin());
 
-        std::print("%s\n", buf.begin());
+        std::print("{}\n", buf.begin());
     }
 
     return (GLboolean)status == GL_TRUE;
@@ -58,12 +58,12 @@ bool Shader::validate()
     return validate_shader() && validate_program();
 }
 
-Shader Shaders::get_shader(u32 name)
+Shader Shaders::get_shader(size_t hash)
 {
     Shader ret{};
     for (auto& shader : m_shaders)
     {
-        if (name == shader.m_hash)
+        if (hash == shader.m_hash)
             ret = shader;
     }
 
@@ -77,7 +77,7 @@ void Shaders::activate_shader(const Shader& shader)
 
 Shader Shaders::get_shader(std::string_view name)
 {
-    return get_shader(Fnv_Hash::hash(name));
+    return get_shader(std::hash<std::string_view>{}(name));
 }
 
 void Shaders::activate_shader(std::string_view name)
@@ -99,7 +99,7 @@ bool Shaders::load_shaders()
         return ret;
     };
 
-    const auto parent_folder = std::filesystem::path("./assets/shaders");
+    const auto parent_folder = std::filesystem::path("C:\\repos\\ironsides\\assets\\shaders");
 
     // the path doesn't exist
     if (parent_folder.empty())
@@ -137,7 +137,7 @@ bool Shaders::load_shaders()
 
         Shader shader{};
         shader.m_name      = key;
-        shader.m_hash      = Fnv_Hash::hash(shader.m_name);
+        shader.m_hash      = std::hash<std::string>{}(shader.m_name);
         shader.m_vert_path = vert_path;
         shader.m_frag_path = frag_path;
 

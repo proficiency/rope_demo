@@ -134,16 +134,16 @@ bool Render::init()
     // ImGui uses the first loaded font as the default
     // io.Fonts->AddFontFromFileTTF("./assets/fonts/Inconsolata-Bold.ttf", 16);
 
-    // if (!m_shaders.load_shaders())
-    // return false;
+    if (!m_shaders.load_shaders())
+        return false;
 
     return true;
 }
 
 void Render::frame()
 {
-
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+    {}
 
     // setup ImGui for a new frame
     ImGui_ImplOpenGL3_NewFrame();
@@ -157,8 +157,8 @@ void Render::frame()
     // ImGui cringe
     static bool show = true;
 
-    const std::string name = std::format("Rope Demo({})", get_fps_display());
-    if (!ImGui::Begin(name.c_str(), &show, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize))
+    const std::string window_name = std::format("Rope Demo({})", get_fps_display());
+    if (!ImGui::Begin(window_name.c_str(), &show, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize))
         return;
 
     // user hit the 'X' button, time to quit
@@ -200,7 +200,12 @@ void Render::frame()
             layer.on_new_frame();
     }
 
+    ImGui::GetForegroundDrawList()->AddRectFilled(m_min, m_max, IM_COL32(0, 0, 0, 1));
+
     // finally, draw our rope
+    static Rope rope{};
+    rope.simulate();
+    rope.draw();
 
     ImGui::End();
 }
@@ -222,13 +227,48 @@ void Render::render()
     for (auto& [name, layer] : m_layers)
     {
         // make sure the layer actually has something drawn on it, by default each layer has one ImDrawCmd
-        if (layer.m_dl->CmdBuffer.size() == 1)
-            continue;
+        // if (layer.m_dl->CmdBuffer.back().ElemCount == 0u)
+        // continue;
 
         layer.on_render();
+
+        if (name == "bg")
+        {
+            ImGui::GetForegroundDrawList()->AddCallback(
+                [](const ImDrawList* dl, const ImDrawCmd* cmd)
+                {
+                    ImDrawData* draw_data = ImGui::GetDrawData();
+                    float       L         = draw_data->DisplayPos.x;
+                    float       R         = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
+                    float       T         = draw_data->DisplayPos.y;
+                    float       B         = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
+
+                    const auto ortho = glm::ortho(L, R, B, T);
+
+                    auto layer          = (Layer*)cmd->UserCallbackData;
+                    auto shader         = g_render->m_shaders.get_shader("gaussian");
+                    auto shader_program = shader.m_shader_program;
+
+                    g_render->m_shaders.activate_shader(shader);
+
+                    glUniformMatrix4fv(glGetUniformLocation(shader_program, "u_projection"), 1, GL_FALSE, &ortho[0][0]);
+                    glUniform2f(glGetUniformLocation(shader_program, "u_resolution"), ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y);
+                    glUniform1i(glGetUniformLocation(shader_program, "u_kernel_size"), 2);
+
+                    GLenum last_active_texture{};glGetIntegerv(GL_ACTIVE_TEXTURE, (GLint*)&last_active_texture);
+                    glActiveTexture(GL_TEXTURE0 + layer->m_texture);
+                    glBindTexture(GL_TEXTURE_2D, layer->m_texture);
+                    glUniform1i(glGetUniformLocation(shader_program, "u_tex"), layer->m_texture);
+                    glActiveTexture(last_active_texture);
+                },
+                &layer
+            );
+        }
+
         ImGui::GetForegroundDrawList()->AddImage(
             (ImTextureID)layer.m_texture, ImVec2(0.0f, 0.0f), io.DisplaySize, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f)
         );
+        ImGui::GetForegroundDrawList()->AddCallback(ImDrawCallback_ResetRenderState, nullptr);
     }
 
     ImGui::GetForegroundDrawList()->PopClipRect();
@@ -273,7 +313,7 @@ Render::Layer::Layer() : m_fbo(), m_rbo(), m_texture()
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_rbo);
 
     if (auto res = glCheckFramebufferStatus(GL_FRAMEBUFFER); res != GL_FRAMEBUFFER_COMPLETE)
-        std::print("framebuffer incomplete: 0x%lx\n", res);
+        std::print("framebuffer incomplete: 0x{:X}\n", res);
 
     // bind the default frame and render buffers
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

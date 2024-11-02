@@ -44,6 +44,10 @@ class Render
         std::shared_ptr<ImDrawList> m_dl;
         std::unique_ptr<ImDrawData> m_drawdata;
 
+        // shader stuff, this should probably be thrown into a class
+        std::optional<Shader>         m_shader;
+        std::optional<std::pair<ImDrawCallback*, void*>> m_shader_callback; // callback, callback data
+
         Layer();
 
         void on_new_frame();
@@ -59,9 +63,10 @@ class Render
     Layers             m_layers;
     std::vector<float> m_fps_history;
 
-    bool init();
-    void frame();
-    void render();
+    bool        init();
+    void        frame();
+    void        render();
+    std::string get_fps_display();
 
 public:
     ImVec2 m_min;
@@ -70,7 +75,6 @@ public:
     Render();
 
     void                        run();
-    std::string                 get_fps_display();
     std::shared_ptr<ImDrawList> get_dl(std::string_view name);
 };
 
