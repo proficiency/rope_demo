@@ -5,7 +5,7 @@
 
 // largely based off of https://www.cs.cmu.edu/afs/cs/academic/class/15462-s13/www/lec_slides/Jakobsen.pdf
 
-Node::Node(bool is_static, const glm::vec2& pos) : m_static(is_static), m_pos(pos), m_last_pos(pos), m_force() {}
+Node::Node(bool is_static, const glm::vec2& pos) : m_static(is_static), m_pos(pos), m_last_pos(pos) {}
 
 void Node::simulate()
 {

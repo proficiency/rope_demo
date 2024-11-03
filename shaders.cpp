@@ -99,7 +99,7 @@ bool Shaders::load_shaders()
         return ret;
     };
 
-    const auto parent_folder = std::filesystem::path("C:\\repos\\ironsides\\assets\\shaders");
+    const auto parent_folder = std::filesystem::path("./");
 
     // the path doesn't exist
     if (parent_folder.empty())

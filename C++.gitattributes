@@ -38,3 +38,4 @@
 
 # vendor GLAD
 glad.c linguist-vendored
+*.c -linguist-detectable
