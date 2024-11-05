@@ -38,4 +38,4 @@
 
 # vendor GLAD
 glad.c linguist-vendored
-*.c -linguist-detectable
+*.c linguist-detectable=false
